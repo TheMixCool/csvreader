@@ -6,7 +6,7 @@
 
 using namespace std;
 
-string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName);
+string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName, int i, int j);
 bool isOperator(char op);
 
 int main(int argc, char* argv[]){
@@ -220,7 +220,7 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '=' ){
-                table[i][j] = computeFunction(table[i][j], table, rowNames, colNames);
+                table[i][j] = computeFunction(table[i][j], table, rowNames, colNames, i , j);
                 continue;
             }
             for(int m = 0; m < table[i][j].length();m++){
@@ -255,7 +255,7 @@ bool isOperator(char op){
     return op == '+' ? true: op == '-' ? true: op == '/' ? true: op == '*' ? true: false;
 }
 
-string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName){
+string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName, int i, int j){
     string arg1_row = "";
     string arg1_col = "";
     string arg2_row = "";
@@ -303,6 +303,9 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
 
     if(rowName.count(arg1_col) == 0 || colName.count(arg1_row) == 0 || rowName.count(arg2_col) == 0 || colName.count(arg2_row) == 0){
         return "_CELLS_NOT_EXISTS_";
+    }
+    if((i == rowName.find(arg1_col)->second && j == colName.find(arg1_row)->second) || (i == rowName.find(arg2_col)->second && j == colName.find(arg2_row)->second)){
+        return "_SELF_LINKING_";
     }
 
     arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
