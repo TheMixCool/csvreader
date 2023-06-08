@@ -7,6 +7,7 @@
 using namespace std;
 
 string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName);
+bool isOperator(char op);
 
 int main(int argc, char* argv[]){
     
@@ -84,6 +85,7 @@ int main(int argc, char* argv[]){
             }
         }
         if(tempCol != colCount){
+            cout << "File preread error\n";
             cout << "Wrong table format\n";
             exit(0);
         }
@@ -95,6 +97,7 @@ int main(int argc, char* argv[]){
     //------------------------------------------------
 
     if(values[0][0] != delimiter){
+        cout << "File preread error\n";
         cout<< "Wrong table format\n";
         exit(0);
     }
@@ -110,6 +113,7 @@ int main(int argc, char* argv[]){
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
+                    cout << "File preread error\n";
                     cout << "Wrong name symbol in row: " << i+1 << '\n';
                     exit(0); 
                 } 
@@ -117,6 +121,7 @@ int main(int argc, char* argv[]){
                 j++;
             }
             if(rowNames.count(tempRowName) == 1){
+                cout << "File preread error\n";
                 cout << "Row number is already used: " << i+1 << '\n';
                 exit(0);
             }
@@ -137,6 +142,7 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values[0].size(); i++){
         while (values[0][i] != delimiter && values[0][i] != '\0'){
             if(!isalpha(values[0][i])){
+                cout << "File preread error\n";
                 cout << "Wrong name symbol in postion: " << i+1 << '\n';
                 exit(0); 
             } 
@@ -144,6 +150,7 @@ int main(int argc, char* argv[]){
             i++;
         }      
         if(colNames.count(tempColName) == 1){
+            cout << "File preread error\n";
             cout << "Column Name is already used.\n";
             cout << "Column: " << colNamesPosition << '\n';
             exit(0);
@@ -162,6 +169,7 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
+                cout << "File preread error\n";
                 cout << "Division by zero\nRow: " << i+1 << "\tposition: " << j+1 <<'\n';
                 exit(0);
             }
@@ -206,13 +214,22 @@ int main(int argc, char* argv[]){
     
     //------------------------------------------------
     // Search for cells for compute
+    // If found operator without '=' symbol, write: "_WRONG_FORMAT_"
     //------------------------------------------------
-
-    for(int i = 0; i < rowCount; i++){
+    
+    for(int i = 1; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
-            if(table[i][j][0] == '='){
+            if(table[i][j][0] == '=' ){
                 table[i][j] = computeFunction(table[i][j], table, rowNames, colNames);
+                continue;
             }
+            for(int m = 0; m < table[i][j].length();m++){
+                if(isOperator(table[i][j][m]) || isalpha(table[i][j][m])){
+                    table[i][j] = "_WRONG_FORMAT_";
+                    break;
+                }
+            }
+
         }
     }
 
@@ -232,6 +249,10 @@ int main(int argc, char* argv[]){
 
     fin.close();
     return 0;
+}
+
+bool isOperator(char op){
+    return op == '+' ? true: op == '-' ? true: op == '/' ? true: op == '*' ? true: false;
 }
 
 string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName){
@@ -257,7 +278,7 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
             i++;
         }
         op = value[i++];
-        if(op != '+' && op != '-' && op !='*' && op != '/'){
+        if(!isOperator(op)){
             return "_WRONG_OP_";
         }
         while(isalpha(value[i])){
@@ -276,9 +297,17 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
         }
     }
 
+    //------------------------------------------------
+    //If found non-existent cell
+    //------------------------------------------------
+
+    if(rowName.count(arg1_col) == 0 || colName.count(arg1_row) == 0 || rowName.count(arg2_col) == 0 || colName.count(arg2_row) == 0){
+        return "_CELLS_NOT_EXISTS_";
+    }
+
     arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
     arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
-
+    
     if(arg2_result == "0" && op == '/'){
         return "_DIVISION_BY_ZERO_";
     }
@@ -294,19 +323,14 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
         arg2_result_int += int(arg2_result[i] - 48) * temp;
     }
 
-    switch (op)
-    {
+    switch (op){
     case '+':
         return to_string(arg1_result_int + arg2_result_int);
-    
     case '-':
         return to_string(arg1_result_int - arg2_result_int);
-    
     case '*':
         return to_string(arg1_result_int * arg2_result_int);
-
     case '/':
         return to_string(double(arg1_result_int / arg2_result_int));
-
     }
 }
