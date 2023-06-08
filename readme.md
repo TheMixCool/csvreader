@@ -2,15 +2,15 @@
 
 ## To compile write:
 
-   ### g++ csvreader.cpp -o csvreader
+    g++ csvreader.cpp -o csvreader
 
 ## To run write:
 
-###   ./csvreader.exe filename.csv
+   ./csvreader.exe filename.csv
     
-    or
+#####    or
 
-###   csvreader.exe filename.csv
+  csvreader.exe filename.csv
 
 
 # Tests information
