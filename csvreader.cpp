@@ -1,9 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <algorithm>
 #include <string>
-#include <exception>
+
 
 using namespace std;
 
@@ -130,10 +129,11 @@ int main(int argc, char* argv[]){
             cout << "Wrong name in position: " << i+2 <<'\n';
             exit(0);
         }
-        if(isdigit(values[0][i]) && isalpha(values[0][i+1])){
-            cout << "Wrong name in position: " << i+2 <<'\n';
-            exit(0);
-        }
+
+        // if(isdigit(values[0][i]) && isalpha(values[0][i+1])){
+        //     cout << "Wrong name in position: " << i+2 <<'\n';
+        //     exit(0);
+        // }
     }
 
     //------------------------------------------------
@@ -187,6 +187,10 @@ int main(int argc, char* argv[]){
         tableRowPosition = 0;
     }
 
+    //------------------------------------------------
+    // Array out before compute
+    //------------------------------------------------
+
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             cout << table[i][j];
@@ -196,6 +200,32 @@ int main(int argc, char* argv[]){
         }
         cout << '\n';
     }
+    cout << '\n';
+    
+    //------------------------------------------------
+    // Search for cells for compute
+    //------------------------------------------------
+    for(int i = 0; i < rowCount; i++){
+        for(int j = 0; j < colCount; j++){
+            if(table[i][j][0] == '='){
+                table[i][j] = "Compute";
+            }
+        }
+    }
+
+    //------------------------------------------------
+    //Array output
+    //------------------------------------------------
+    for(int i = 0; i < rowCount; i++){
+        for(int j = 0; j < colCount; j++){
+            cout << table[i][j];
+            if(j != colCount-1){
+                cout << delimiter;
+             }
+        }
+        cout << '\n';
+    }
+
 
 
 
