@@ -1,4 +1,19 @@
-#Information about tests
+# H1 Program information
+
+To compile write:
+
+    g++ csvreader.cpp -o csvreader
+
+To run write:
+
+    ./csvreader.exe filename.csv
+    
+    or
+
+    csvreader.exe filename.csv
+
+
+# H1 Tests information
 
 file.csv - file without erros
 
