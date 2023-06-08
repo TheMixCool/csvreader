@@ -6,7 +6,7 @@
 
 using namespace std;
 
-string computeFunction(string value, string **table, int row, int col);
+string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName);
 
 int main(int argc, char* argv[]){
     
@@ -116,7 +116,6 @@ int main(int argc, char* argv[]){
                 tempRowName +=values[i][j];
                 j++;
             }
-            
             if(rowNames.count(tempRowName) == 1){
                 cout << "Row number is already used: " << i+1 << '\n';
                 exit(0);
@@ -131,9 +130,9 @@ int main(int argc, char* argv[]){
     // Checking columns names
     //------------------------------------------------
 
-    map<string, int> ColNames;
-    string tempCowName = "";
-    int ColNamesPosition = 1;
+    map<string, int> colNames;
+    string tempColName = "";
+    int colNamesPosition = 1;
 
     for(int i = 1; i < values[0].size(); i++){
         while (values[0][i] != delimiter && values[0][i] != '\0'){
@@ -141,18 +140,17 @@ int main(int argc, char* argv[]){
                 cout << "Wrong name symbol in postion: " << i+1 << '\n';
                 exit(0); 
             } 
-            tempCowName +=values[0][i];
+            tempColName +=values[0][i];
             i++;
-        }
-            
-        if(ColNames.count(tempCowName) == 1){
+        }      
+        if(colNames.count(tempColName) == 1){
             cout << "Column Name is already used.\n";
-            cout << "Column: " << ColNamesPosition << '\n';
+            cout << "Column: " << colNamesPosition << '\n';
             exit(0);
         }
-        ColNames.insert(pair<string, int>(tempCowName, ColNamesPosition));
-        ColNamesPosition++;
-        tempCowName = ""; 
+        colNames.insert(pair<string, int>(tempColName, colNamesPosition));
+        colNamesPosition++;
+        tempColName = ""; 
     }
     
     //------------------------------------------------
@@ -213,7 +211,7 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '='){
-                table[i][j] = computeFunction(table[i][j], table, rowCount, colCount);
+                table[i][j] = computeFunction(table[i][j], table, rowNames, colNames);
             }
         }
     }
@@ -232,31 +230,83 @@ int main(int argc, char* argv[]){
         cout << '\n';
     }
 
+    fin.close();
+    return 0;
 }
 
-string computeFunction(string value, string **table, int row, int col){
+string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName){
     string arg1_row = "";
     string arg1_col = "";
     string arg2_row = "";
     string arg2_col = "";
-    string op = "";
+    char op = ' ';
     string arg1_result = "";
     string arg2_result = "";
 
-    // for(int i = 0; i < row; i++){
-    //     for(int j = 0; j < col; j++){
-    //         cout << table[i][j] << '\t';
-    //     }
-    //     cout << '\n';
-    // }
-    // cout << '\n';
-    
-    arg2_result = "0";
-    op = "/";
-    if(arg2_result == "0" && op == "/"){
-        return "__DIVISION_BY_ZERO__";
+    //------------------------------------------------
+    //Start from 1 because value[0] == '='
+    //------------------------------------------------
+
+    for(int i = 1; i < value.length();i++){
+        while(isalpha(value[i])){
+            arg1_row += value[i];
+            i++;
+        }
+        while(isdigit(value[i])){
+            arg1_col += value[i];
+            i++;
+        }
+        op = value[i++];
+        if(op != '+' && op != '-' && op !='*' && op != '/'){
+            return "_WRONG_OP_";
+        }
+        while(isalpha(value[i])){
+            arg2_row += value[i];
+            i++;
+        }
+        while(isdigit(value[i])){
+            arg2_col += value[i];
+            i++;
+        }
+        if(i == value.length()){
+            break;
+        }
+        else{
+            return "_WRONG_FORMAT_";
+        }
     }
-    else{
-        return value;
+
+    arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
+    arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
+
+    if(arg2_result == "0" && op == '/'){
+        return "_DIVISION_BY_ZERO_";
+    }
+
+    int arg1_result_int = 0;
+    int arg2_result_int = 0;
+
+    for(int i = arg1_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
+        arg1_result_int += int(arg1_result[i] - 48) * temp;
+    }
+
+    for(int i = arg2_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
+        arg2_result_int += int(arg2_result[i] - 48) * temp;
+    }
+
+    switch (op)
+    {
+    case '+':
+        return to_string(arg1_result_int + arg2_result_int);
+    
+    case '-':
+        return to_string(arg1_result_int - arg2_result_int);
+    
+    case '*':
+        return to_string(arg1_result_int * arg2_result_int);
+
+    case '/':
+        return to_string(double(arg1_result_int / arg2_result_int));
+
     }
 }
