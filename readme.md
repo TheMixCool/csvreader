@@ -6,7 +6,7 @@
 
  To run write:
 
-  ./csvreader.exe filename.csv
+    ./csvreader.exe filename.csv
 
 
 # Tests information
