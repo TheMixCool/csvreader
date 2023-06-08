@@ -1,19 +1,19 @@
-# H1 Program information
+# Program information
 
-To compile write:
+## To compile write:
 
-    g++ csvreader.cpp -o csvreader
+   ### g++ csvreader.cpp -o csvreader
 
-To run write:
+## To run write:
 
-    ./csvreader.exe filename.csv
+###   ./csvreader.exe filename.csv
     
     or
 
-    csvreader.exe filename.csv
+###   csvreader.exe filename.csv
 
 
-# H1 Tests information
+# Tests information
 
 file.csv - file without erros
 
