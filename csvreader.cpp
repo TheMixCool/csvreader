@@ -164,20 +164,34 @@ int main(int argc, char* argv[]){
     // Test fillArray action
     //------------------------------------------------
 
-    for(int i = 0; i < rowCount; i++){
-        for(int j = 0; j < colCount; j++){
+    string valueToWrite = "";
+    int tableRowPosition = 0;
+    int tableColPosition = 0;
+    for(int i = 0; i < values.size(); i++){
+        for(int j = 0; j < values[i].size(); j++){
             if(i == 0 && j == 0){
+                table[tableColPosition][tableRowPosition] = valueToWrite;
+                tableRowPosition++;
                 continue;
             }
-            table[i][j] = char(i + 48);
+            while(values[i][j] != delimiter && values[i][j] != '\0'){
+                valueToWrite += values[i][j];
+                j++;
+            }
+            table[tableColPosition][tableRowPosition] = valueToWrite;
+            valueToWrite = "";
+            tableRowPosition++;
+
         }
+        tableColPosition++;
+        tableRowPosition = 0;
     }
 
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             cout << table[i][j];
             if(j != colCount-1){
-                cout << ',';
+                cout << delimiter;
              }
         }
         cout << '\n';
