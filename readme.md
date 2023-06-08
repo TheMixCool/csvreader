@@ -6,10 +6,6 @@
 
 ## To run write:
 
-   ./csvreader.exe filename.csv
-    
-#####    or
-
   csvreader.exe filename.csv
 
 
