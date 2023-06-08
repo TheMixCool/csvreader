@@ -1,10 +1,10 @@
 # Program information
 
-## To compile write:
+ To compile write:
 
     g++ csvreader.cpp -o csvreader
 
-## To run write:
+ To run write:
 
   csvreader.exe filename.csv
 
