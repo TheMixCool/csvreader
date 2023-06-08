@@ -2,9 +2,11 @@
 #include <fstream>
 #include <vector>
 #include <string>
-
+#include <map>
 
 using namespace std;
+
+string computeFunction(string value, string **table, int row, int col);
 
 int main(int argc, char* argv[]){
     
@@ -39,7 +41,7 @@ int main(int argc, char* argv[]){
         exit(0);
     }
     else{
-        cout << "File was opened\n";
+        cout << "File was opened\n\n";
     }
 
     char delimiter = ',';
@@ -100,18 +102,27 @@ int main(int argc, char* argv[]){
     //------------------------------------------------
     // Checking row numerations
     //------------------------------------------------
+    map<string, int> rowNames;
+    string tempRowName = "";
 
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
-                    cout << "Wrong number in row: " << i+1 << '\n';
-                    cout << "Wrong symbol is: " << values[i][j] << '\n';
+                    cout << "Wrong name symbol in row: " << i+1 << '\n';
                     exit(0); 
-                }  
+                } 
+                tempRowName +=values[i][j];
                 j++;
             }
+            
+            if(rowNames.count(tempRowName) == 1){
+                cout << "Row number is already used: " << i+1 << '\n';
+                exit(0);
+            }
+            rowNames.insert(pair<string, int>(tempRowName, i));
+            tempRowName = "";
             break; 
         }
     }
@@ -120,21 +131,45 @@ int main(int argc, char* argv[]){
     // Checking columns names
     //------------------------------------------------
 
+    map<string, int> ColNames;
+    string tempCowName = "";
+    int ColNamesPosition = 1;
+
     for(int i = 1; i < values[0].size(); i++){
-        if(values[0][i] != delimiter && !isdigit(values[0][i]) && !isalpha(values[0][i])){
-            cout << "Wrond symbol in position: " << i << '\n';
-            exit(0);
-        }
-        if(values[0][i] == delimiter && isdigit(values[0][i+1])){
-            cout << "Wrong name in position: " << i+2 <<'\n';
-            exit(0);
-        }
+        // if(values[0][i] != delimiter && !isdigit(values[0][i]) && !isalpha(values[0][i])){
+        //     cout << "Wrond symbol in position: " << i << '\n';
+        //     exit(0);
+        // }
+        // if(values[0][i] == delimiter && isdigit(values[0][i+1])){
+        //     cout << "Wrong symbol in position: " << i+2 <<'\n';
+        //     exit(0);
+        // }
+
+        while (values[0][i] != delimiter && values[0][i] != '\0'){
+                if(!isalpha(values[0][i])){
+                    cout << "Wrong name symbol in postion: " << i+1 << '\n';
+                    exit(0); 
+                } 
+                tempCowName +=values[0][i];
+                i++;
+            }
+            
+            if(ColNames.count(tempCowName) == 1){
+                cout << "Column Name is already used.\n";
+                cout << "Column: " << ColNamesPosition << '\n';
+                exit(0);
+            }
+            ColNames.insert(pair<string, int>(tempCowName, ColNamesPosition));
+            ColNamesPosition++;
+            tempCowName = ""; 
+    }
+
 
         // if(isdigit(values[0][i]) && isalpha(values[0][i+1])){
         //     cout << "Wrong name in position: " << i+2 <<'\n';
         //     exit(0);
         // }
-    }
+    
 
     //------------------------------------------------
     // Checking division by zero 
@@ -191,16 +226,16 @@ int main(int argc, char* argv[]){
     // Array out before compute
     //------------------------------------------------
 
-    for(int i = 0; i < rowCount; i++){
-        for(int j = 0; j < colCount; j++){
-            cout << table[i][j];
-            if(j != colCount-1){
-                cout << delimiter;
-             }
-        }
-        cout << '\n';
-    }
-    cout << '\n';
+    // for(int i = 0; i < rowCount; i++){
+    //     for(int j = 0; j < colCount; j++){
+    //         cout << table[i][j];
+    //         if(j != colCount-1){
+    //             cout << delimiter;
+    //          }
+    //     }
+    //     cout << '\n';
+    // }
+    // cout << '\n';
     
     //------------------------------------------------
     // Search for cells for compute
@@ -208,7 +243,7 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '='){
-                table[i][j] = "Compute";
+                table[i][j] = computeFunction(table[i][j], table, rowCount, colCount);
             }
         }
     }
@@ -226,7 +261,21 @@ int main(int argc, char* argv[]){
         cout << '\n';
     }
 
+}
 
+string computeFunction(string value, string **table, int row, int col){
+    string arg1_row = "";
+    string arg1_col = "";
+    string arg2_row = "";
+    string arg2_col = "";
+    string op = "";
 
-
+    // for(int i = 0; i < row; i++){
+    //     for(int j = 0; j < col; j++){
+    //         cout << table[i][j] << '\t';
+    //     }
+    //     cout << '\n';
+    // }
+    // cout << '\n';
+    return value;
 }
