@@ -136,41 +136,25 @@ int main(int argc, char* argv[]){
     int ColNamesPosition = 1;
 
     for(int i = 1; i < values[0].size(); i++){
-        // if(values[0][i] != delimiter && !isdigit(values[0][i]) && !isalpha(values[0][i])){
-        //     cout << "Wrond symbol in position: " << i << '\n';
-        //     exit(0);
-        // }
-        // if(values[0][i] == delimiter && isdigit(values[0][i+1])){
-        //     cout << "Wrong symbol in position: " << i+2 <<'\n';
-        //     exit(0);
-        // }
-
         while (values[0][i] != delimiter && values[0][i] != '\0'){
-                if(!isalpha(values[0][i])){
-                    cout << "Wrong name symbol in postion: " << i+1 << '\n';
-                    exit(0); 
-                } 
-                tempCowName +=values[0][i];
-                i++;
-            }
+            if(!isalpha(values[0][i])){
+                cout << "Wrong name symbol in postion: " << i+1 << '\n';
+                exit(0); 
+            } 
+            tempCowName +=values[0][i];
+            i++;
+        }
             
-            if(ColNames.count(tempCowName) == 1){
-                cout << "Column Name is already used.\n";
-                cout << "Column: " << ColNamesPosition << '\n';
-                exit(0);
-            }
-            ColNames.insert(pair<string, int>(tempCowName, ColNamesPosition));
-            ColNamesPosition++;
-            tempCowName = ""; 
+        if(ColNames.count(tempCowName) == 1){
+            cout << "Column Name is already used.\n";
+            cout << "Column: " << ColNamesPosition << '\n';
+            exit(0);
+        }
+        ColNames.insert(pair<string, int>(tempCowName, ColNamesPosition));
+        ColNamesPosition++;
+        tempCowName = ""; 
     }
-
-
-        // if(isdigit(values[0][i]) && isalpha(values[0][i+1])){
-        //     cout << "Wrong name in position: " << i+2 <<'\n';
-        //     exit(0);
-        // }
     
-
     //------------------------------------------------
     // Checking division by zero 
     // (first check before creating array with values)
@@ -196,7 +180,7 @@ int main(int argc, char* argv[]){
     }
 
     //------------------------------------------------
-    // Test fillArray action
+    // Fill array of values
     //------------------------------------------------
 
     string valueToWrite = "";
@@ -221,25 +205,11 @@ int main(int argc, char* argv[]){
         tableColPosition++;
         tableRowPosition = 0;
     }
-
-    //------------------------------------------------
-    // Array out before compute
-    //------------------------------------------------
-
-    // for(int i = 0; i < rowCount; i++){
-    //     for(int j = 0; j < colCount; j++){
-    //         cout << table[i][j];
-    //         if(j != colCount-1){
-    //             cout << delimiter;
-    //          }
-    //     }
-    //     cout << '\n';
-    // }
-    // cout << '\n';
     
     //------------------------------------------------
     // Search for cells for compute
     //------------------------------------------------
+
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '='){
@@ -249,8 +219,9 @@ int main(int argc, char* argv[]){
     }
 
     //------------------------------------------------
-    //Array output
+    //Final array output
     //------------------------------------------------
+
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             cout << table[i][j];
@@ -269,6 +240,8 @@ string computeFunction(string value, string **table, int row, int col){
     string arg2_row = "";
     string arg2_col = "";
     string op = "";
+    string arg1_result = "";
+    string arg2_result = "";
 
     // for(int i = 0; i < row; i++){
     //     for(int j = 0; j < col; j++){
@@ -277,5 +250,13 @@ string computeFunction(string value, string **table, int row, int col){
     //     cout << '\n';
     // }
     // cout << '\n';
-    return value;
+    
+    arg2_result = "0";
+    op = "/";
+    if(arg2_result == "0" && op == "/"){
+        return "__DIVISION_BY_ZERO__";
+    }
+    else{
+        return value;
+    }
 }
