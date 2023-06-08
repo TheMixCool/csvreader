@@ -166,13 +166,19 @@ int main(int argc, char* argv[]){
 
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
-            table[i][j] = "qwe";
+            if(i == 0 && j == 0){
+                continue;
+            }
+            table[i][j] = char(i + 48);
         }
     }
 
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
-            cout << table[i][j] << '\t';
+            cout << table[i][j];
+            if(j != colCount-1){
+                cout << ',';
+             }
         }
         cout << '\n';
     }
