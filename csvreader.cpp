@@ -110,6 +110,11 @@ int main(int argc, char* argv[]){
 
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
+            if(!isdigit(values[i][0])){
+                    cout << "File preread error\n";
+                    cout << "Wrong name in row: " << i+1 << '\n';
+                    exit(0); 
+            }
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
