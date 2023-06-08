@@ -336,4 +336,5 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
     case '/':
         return to_string(double(arg1_result_int / arg2_result_int));
     }
+    return "_FUNCTION_ERROR_";
 }
