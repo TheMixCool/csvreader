@@ -37,4 +37,4 @@ file11.csv - empty column name
 
 file12.csv - big file with different errors
 
-
+file13.csv - sum of negative values
