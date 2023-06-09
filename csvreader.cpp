@@ -55,10 +55,7 @@ int main(int argc, char* argv[]){
     }
     values.shrink_to_fit();
 
-    //------------------------------------------------
     // Getting column count for checking table format 
-    //------------------------------------------------
-
     rowCount = values.size();
     for(int i = 0; i < values[0].size();i++){
         if(values[0][i] == delimiter){
@@ -66,10 +63,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //------------------------------------------------
     // Checking table format
-    //------------------------------------------------
-
     int tempCol = 1;
     for(int i = 0; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
@@ -85,19 +79,14 @@ int main(int argc, char* argv[]){
         tempCol = 1;
     }
 
-    //------------------------------------------------
     // Checking element [0][0] 
-    //------------------------------------------------
-
     if(values[0][0] != delimiter){
         std::cout << "File preread error\n";
         std::cout<< "Wrong table format\n";
         exit(0);
     }
 
-    //------------------------------------------------
     // Checking row numerations
-    //------------------------------------------------
     std::map<std::string, int> rowNames;
     std::string tempRowName = "";
 
@@ -129,10 +118,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //------------------------------------------------
     // Checking columns names
-    //------------------------------------------------
-
     std::map<std::string, int> colNames;
     std::string tempColName = "";
     int colNamesPosition = 1;
@@ -163,12 +149,9 @@ int main(int argc, char* argv[]){
         tempColName = ""; 
     }
     
-    //------------------------------------------------
     // Checking division by zero 
     // (first check before creating array with values)
     // (second check will be with table values)
-    //------------------------------------------------
-
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
@@ -179,19 +162,13 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //------------------------------------------------
-    // Creating array of values
-    //------------------------------------------------
-    
+    // Creating array of values  
     std::string ** table = new std::string *[rowCount];
     for(int i = 0; i < rowCount; i++){
         table[i] = new std::string[colCount];
     }
 
-    //------------------------------------------------
     // Fill array of values
-    //------------------------------------------------
-
     std::string valueToWrite = "";
     int tableRowPosition = 0;
     int tableColPosition = 0;
@@ -209,17 +186,13 @@ int main(int argc, char* argv[]){
             table[tableColPosition][tableRowPosition] = valueToWrite;
             valueToWrite = "";
             tableRowPosition++;
-
         }
         tableColPosition++;
         tableRowPosition = 0;
     }
     
-    //------------------------------------------------
     // Search for cells for compute
     // If found operator without '=' symbol, write: "_WRONG_FORMAT_"
-    //------------------------------------------------
-    
     for(int i = 1; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '=' ){
@@ -232,7 +205,6 @@ int main(int argc, char* argv[]){
                     break;
                 }
             }
-
         }
     }
 
