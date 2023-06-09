@@ -35,4 +35,6 @@ file10.csv - empty row name
 
 file11.csv - empty column name
 
+file12.csv - big file with different errors
+
 
