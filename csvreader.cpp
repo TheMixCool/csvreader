@@ -4,37 +4,22 @@
 #include <string>
 #include <map>
 
-//using namespace std;
-
-// using std::cout;
-// using std::string;
-// using std::map;
-// using std::pair;
-// using std::to_string;
-// using std::ifstream;
-// using std::vector;
-
+std::string computeResult(std::string arg1_result, std::string arg2_result, char op);
 std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j);
 bool isOperator(char op);
+void printTable(std::string ** table, int rowCount, int colCount, char delimiter);
 
 int main(int argc, char* argv[]){
     
     std::string path = "";
 
-    //------------------------------------------------
     // No path argument
-    //------------------------------------------------
-
     if(argc == 1){                              
         std::cout << "Path to file is empty\n";       
         exit(0);                                
     }
 
-    //------------------------------------------------
-    // Path argument was found 
-    // "./csvreader file.csv"
-    //------------------------------------------------
-    
+    // Path argument was found ---- "./csvreader file.csv"
     else if(argc == 2){                              
         path = argv[1];                        
     }
@@ -251,10 +236,19 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //------------------------------------------------
     //Final array output
-    //------------------------------------------------
+    printTable(table, rowCount, colCount, delimiter);
+    
+    fin.close();
 
+    for(int i = 0; i < rowCount;i++)
+        delete [] table[i];
+    delete [] table;
+
+    return 0;
+}
+
+void printTable(std::string ** table, int rowCount, int colCount, char delimiter){
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             std::cout << table[i][j];
@@ -264,13 +258,57 @@ int main(int argc, char* argv[]){
         }
         std::cout << '\n';
     }
-
-    fin.close();
-    return 0;
 }
 
 bool isOperator(char op){
-    return op == '+' ? true: op == '-' ? true: op == '/' ? true: op == '*' ? true: false;
+    if( op == '+' || op == '-' || 
+        op == '*' || op == '/' ){
+            return true;
+    }
+    else{
+        return false;
+    }
+}
+
+std::string computeResult(std::string arg1_result, std::string arg2_result, char op){
+    int arg1_result_int = 0;
+    bool arg1_isPositive = arg1_result[0] != '-';
+    int arg2_result_int = 0;
+    bool arg2_isPositive = arg2_result[0] != '-';
+    
+    if(!arg1_isPositive){
+        arg1_result.erase(0,1);
+    }
+    if(!arg2_isPositive){
+        arg2_result.erase(0,1);
+    }
+    
+    for(int i = arg1_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
+        arg1_result_int += int(arg1_result[i] - 48) * temp;
+    }
+
+    if(!arg1_isPositive){
+        arg1_result_int *= -1;
+    }
+
+    for(int i = arg2_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
+        arg2_result_int += int(arg2_result[i] - 48) * temp;
+    }
+
+    if(!arg2_isPositive){
+        arg2_result_int *= -1;
+    }
+
+    switch (op){
+    case '+':
+        return std::to_string(arg1_result_int + arg2_result_int);
+    case '-':
+        return std::to_string(arg1_result_int - arg2_result_int);
+    case '*':
+        return std::to_string(arg1_result_int * arg2_result_int);
+    case '/':
+        return std::to_string(arg1_result_int / arg2_result_int);
+    }
 }
 
 std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j){
@@ -278,15 +316,14 @@ std::string computeFunction(std::string value, std::string **table, std::map<std
     std::string arg1_col = "";
     std::string arg2_row = "";
     std::string arg2_col = "";
-    char op = ' ';
     std::string arg1_result = "";
     std::string arg2_result = "";
+    char op = ' ';
 
-    //------------------------------------------------
-    //Start from 1 because value[0] == '='
-    //------------------------------------------------
-
-    for(int i = 1; i < value.length();i++){
+    for(int i = 0; i < value.length();i++){
+        if(value[i] == '='){
+            i++;
+        }
         while(isalpha(value[i])){
             arg1_row += value[i];
             i++;
@@ -315,60 +352,23 @@ std::string computeFunction(std::string value, std::string **table, std::map<std
         }
     }
 
-    //------------------------------------------------
     //If found non-existent cell
-    //------------------------------------------------
-
     if(rowName.count(arg1_col) == 0 || colName.count(arg1_row) == 0 || rowName.count(arg2_col) == 0 || colName.count(arg2_row) == 0){
         return "_CELLS_NOT_EXISTS_";
     }
+
+    //If self linking
     if((i == rowName.find(arg1_col)->second && j == colName.find(arg1_row)->second) || (i == rowName.find(arg2_col)->second && j == colName.find(arg2_row)->second)){
         return "_SELF_LINKING_";
     }
 
-
+    //Get value of arguments by rowName and colName
     arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
     arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
     if(arg2_result == "0" && op == '/'){
         return "_DIVISION_BY_ZERO_";
     }
 
-    int arg1_result_int = 0;
-    bool arg1_isPositive = arg1_result[0] != '-';
-    int arg2_result_int = 0;
-    bool arg2_isPositive = arg2_result[0] != '-';
-    
-    if(!arg1_isPositive){
-        arg1_result.erase(0,1);
-    }
-    if(!arg2_isPositive){
-        arg2_result.erase(0,1);
-    }
-    
-    for(int i = arg1_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
-        arg1_result_int += int(arg1_result[i] - 48) * temp;
-    }
-    if(!arg1_isPositive){
-        arg1_result_int *= -1;
-    }
-
-    for(int i = arg2_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
-        arg2_result_int += int(arg2_result[i] - 48) * temp;
-    }
-
-    if(!arg2_isPositive){
-        arg2_result_int *= -1;
-    }
-
-    switch (op){
-    case '+':
-        return std::to_string(arg1_result_int + arg2_result_int);
-    case '-':
-        return std::to_string(arg1_result_int - arg2_result_int);
-    case '*':
-        return std::to_string(arg1_result_int * arg2_result_int);
-    case '/':
-        return std::to_string(arg1_result_int / arg2_result_int);
-    }
-    return "_FUNCTION_ERROR_";
+    return computeResult(arg1_result, arg2_result, op);
 }
+
