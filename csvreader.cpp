@@ -112,7 +112,7 @@ int main(int argc, char* argv[]){
         for(int j = 0; j < values[i].size(); j++){
             if(!isdigit(values[i][0])){
                     cout << "File preread error\n";
-                    cout << "Wrong name in row: " << i+1 << '\n';
+                    cout << "Row name is empty: " << i+1 << '\n';
                     exit(0); 
             }
             while (values[i][j] != delimiter)
@@ -159,6 +159,11 @@ int main(int argc, char* argv[]){
             cout << "Column Name is already used.\n";
             cout << "Column: " << colNamesPosition << '\n';
             exit(0);
+        }
+        if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
+                cout << "File preread error\n";
+                cout << "Column name is empty: " << i+1 << '\n';
+                exit(0); 
         }
         colNames.insert(pair<string, int>(tempColName, colNamesPosition));
         colNamesPosition++;

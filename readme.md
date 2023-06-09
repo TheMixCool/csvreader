@@ -33,4 +33,6 @@ file9.csv - wrong table format (existing symbol in position [0][0] )
 
 file10.csv - empty row name
 
+file11.csv - empty column name
+
 
