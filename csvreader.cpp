@@ -4,54 +4,62 @@
 #include <string>
 #include <map>
 
-using namespace std;
+//using namespace std;
 
-string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName, int i, int j);
+// using std::cout;
+// using std::string;
+// using std::map;
+// using std::pair;
+// using std::to_string;
+// using std::ifstream;
+// using std::vector;
+
+std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j);
 bool isOperator(char op);
 
 int main(int argc, char* argv[]){
     
-    string path = "";
+    std::string path = "";
 
     //------------------------------------------------
     // No path argument
     //------------------------------------------------
 
     if(argc == 1){                              
-        cout << "Path to file is empty\n";       
+        std::cout << "Path to file is empty\n";       
         exit(0);                                
     }
 
     //------------------------------------------------
     // Path argument was found 
-    // "./a file.csv"
+    // "./csvreader file.csv"
     //------------------------------------------------
     
     else if(argc == 2){                              
         path = argv[1];                        
     }
     else{
-        cout << "Too much arguments\n";
+        std::cout << "Too many arguments\n";
         exit(0);
     } 
 
-    ifstream fin;
+    std::ifstream fin;
     fin.open(path);
     if(!fin.is_open()){
-        cout << "Wrong path to file\n";
+        std::cout << "Wrong path to file\n";
         exit(0);
     }
     else{
-        cout << "File was opened\n\n";
+        std::cout << "File was opened\n\n";
     }
 
     char delimiter = ',';
     int colCount = 1;
     int rowCount = 0;
 
-    vector<string> values;
+    std::vector<std::string> values;
     values.reserve(100000);
-    string temp;
+    std::string temp;
 
     while(!fin.eof()){
         fin >> temp;
@@ -85,8 +93,8 @@ int main(int argc, char* argv[]){
             }
         }
         if(tempCol != colCount){
-            cout << "File preread error\n";
-            cout << "Wrong table format\n";
+            std::cout << "File preread error\n";
+            std::cout << "Wrong table format\n";
             exit(0);
         }
         tempCol = 1;
@@ -97,40 +105,40 @@ int main(int argc, char* argv[]){
     //------------------------------------------------
 
     if(values[0][0] != delimiter){
-        cout << "File preread error\n";
-        cout<< "Wrong table format\n";
+        std::cout << "File preread error\n";
+        std::cout<< "Wrong table format\n";
         exit(0);
     }
 
     //------------------------------------------------
     // Checking row numerations
     //------------------------------------------------
-    map<string, int> rowNames;
-    string tempRowName = "";
+    std::map<std::string, int> rowNames;
+    std::string tempRowName = "";
 
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(!isdigit(values[i][0])){
-                    cout << "File preread error\n";
-                    cout << "Row name is empty: " << i+1 << '\n';
+                    std::cout << "File preread error\n";
+                    std::cout << "Row name is empty: " << i+1 << '\n';
                     exit(0); 
             }
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
-                    cout << "File preread error\n";
-                    cout << "Wrong name symbol in row: " << i+1 << '\n';
+                    std::cout << "File preread error\n";
+                    std::cout << "Wrong name symbol in row: " << i+1 << '\n';
                     exit(0); 
                 } 
                 tempRowName +=values[i][j];
                 j++;
             }
             if(rowNames.count(tempRowName) == 1){
-                cout << "File preread error\n";
-                cout << "Row number is already used: " << i+1 << '\n';
+                std::cout << "File preread error\n";
+                std::cout << "Row number is already used: " << i+1 << '\n';
                 exit(0);
             }
-            rowNames.insert(pair<string, int>(tempRowName, i));
+            rowNames.insert(std::pair<std::string, int>(tempRowName, i));
             tempRowName = "";
             break; 
         }
@@ -140,32 +148,32 @@ int main(int argc, char* argv[]){
     // Checking columns names
     //------------------------------------------------
 
-    map<string, int> colNames;
-    string tempColName = "";
+    std::map<std::string, int> colNames;
+    std::string tempColName = "";
     int colNamesPosition = 1;
 
     for(int i = 1; i < values[0].size(); i++){
         while (values[0][i] != delimiter && values[0][i] != '\0'){
             if(!isalpha(values[0][i])){
-                cout << "File preread error\n";
-                cout << "Wrong name symbol in postion: " << i+1 << '\n';
+                std::cout << "File preread error\n";
+                std::cout << "Wrong name symbol in postion: " << i+1 << '\n';
                 exit(0); 
             } 
             tempColName +=values[0][i];
             i++;
         }      
         if(colNames.count(tempColName) == 1){
-            cout << "File preread error\n";
-            cout << "Column Name is already used.\n";
-            cout << "Column: " << colNamesPosition << '\n';
+            std::cout << "File preread error\n";
+            std::cout << "Column Name is already used.\n";
+            std::cout << "Column: " << colNamesPosition << '\n';
             exit(0);
         }
         if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
-                cout << "File preread error\n";
-                cout << "Column name is empty: " << i+1 << '\n';
+                std::cout << "File preread error\n";
+                std::cout << "Column name is empty: " << i+1 << '\n';
                 exit(0); 
         }
-        colNames.insert(pair<string, int>(tempColName, colNamesPosition));
+        colNames.insert(std::pair<std::string, int>(tempColName, colNamesPosition));
         colNamesPosition++;
         tempColName = ""; 
     }
@@ -179,8 +187,8 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
-                cout << "File preread error\n";
-                cout << "Division by zero\nRow: " << i+1 << "\tposition: " << j+1 <<'\n';
+                std::cout << "File preread error\n";
+                std::cout << "Division by zero\nRow: " << i+1 << "\tposition: " << j+1 <<'\n';
                 exit(0);
             }
         }
@@ -190,16 +198,16 @@ int main(int argc, char* argv[]){
     // Creating array of values
     //------------------------------------------------
     
-    string ** table = new string *[rowCount];
+    std::string ** table = new std::string *[rowCount];
     for(int i = 0; i < rowCount; i++){
-        table[i] = new string[colCount];
+        table[i] = new std::string[colCount];
     }
 
     //------------------------------------------------
     // Fill array of values
     //------------------------------------------------
 
-    string valueToWrite = "";
+    std::string valueToWrite = "";
     int tableRowPosition = 0;
     int tableColPosition = 0;
     for(int i = 0; i < values.size(); i++){
@@ -249,12 +257,12 @@ int main(int argc, char* argv[]){
 
     for(int i = 0; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
-            cout << table[i][j];
+            std::cout << table[i][j];
             if(j != colCount-1){
-                cout << delimiter;
+                std::cout << delimiter;
              }
         }
-        cout << '\n';
+        std::cout << '\n';
     }
 
     fin.close();
@@ -265,14 +273,14 @@ bool isOperator(char op){
     return op == '+' ? true: op == '-' ? true: op == '/' ? true: op == '*' ? true: false;
 }
 
-string computeFunction(string value, string **table, map<string, int> rowName, map<string, int> colName, int i, int j){
-    string arg1_row = "";
-    string arg1_col = "";
-    string arg2_row = "";
-    string arg2_col = "";
+std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j){
+    std::string arg1_row = "";
+    std::string arg1_col = "";
+    std::string arg2_row = "";
+    std::string arg2_col = "";
     char op = ' ';
-    string arg1_result = "";
-    string arg2_result = "";
+    std::string arg1_result = "";
+    std::string arg2_result = "";
 
     //------------------------------------------------
     //Start from 1 because value[0] == '='
@@ -354,13 +362,13 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
 
     switch (op){
     case '+':
-        return to_string(arg1_result_int + arg2_result_int);
+        return std::to_string(arg1_result_int + arg2_result_int);
     case '-':
-        return to_string(arg1_result_int - arg2_result_int);
+        return std::to_string(arg1_result_int - arg2_result_int);
     case '*':
-        return to_string(arg1_result_int * arg2_result_int);
+        return std::to_string(arg1_result_int * arg2_result_int);
     case '/':
-        return to_string(arg1_result_int / arg2_result_int);
+        return std::to_string(arg1_result_int / arg2_result_int);
     }
     return "_FUNCTION_ERROR_";
 }
