@@ -234,7 +234,7 @@ int main(int argc, char* argv[]){
                 continue;
             }
             for(int m = 0; m < table[i][j].length();m++){
-                if(isOperator(table[i][j][m]) || isalpha(table[i][j][m])){
+                if((isOperator(table[i][j][m]) && !isdigit(table[i][j][m+1])) || isalpha(table[i][j][m])){
                     table[i][j] = "_WRONG_FORMAT_";
                     break;
                 }
@@ -318,22 +318,38 @@ string computeFunction(string value, string **table, map<string, int> rowName, m
         return "_SELF_LINKING_";
     }
 
+
     arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
     arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
-    
     if(arg2_result == "0" && op == '/'){
         return "_DIVISION_BY_ZERO_";
     }
 
     int arg1_result_int = 0;
+    bool arg1_isPositive = arg1_result[0] != '-';
     int arg2_result_int = 0;
-
+    bool arg2_isPositive = arg2_result[0] != '-';
+    
+    if(!arg1_isPositive){
+        arg1_result.erase(0,1);
+    }
+    if(!arg2_isPositive){
+        arg2_result.erase(0,1);
+    }
+    
     for(int i = arg1_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
         arg1_result_int += int(arg1_result[i] - 48) * temp;
+    }
+    if(!arg1_isPositive){
+        arg1_result_int *= -1;
     }
 
     for(int i = arg2_result.length() - 1, temp = 1; i >= 0; i--, temp *= 10){
         arg2_result_int += int(arg2_result[i] - 48) * temp;
+    }
+
+    if(!arg2_isPositive){
+        arg2_result_int *= -1;
     }
 
     switch (op){
