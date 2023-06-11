@@ -5,48 +5,64 @@
 #include <string>
 #include <map>
 
-std::string computeResult(std::string arg1_result, std::string arg2_result, char op);
-std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j);
+std::string computeResult(std::string &arg1_result, std::string &arg2_result, char op);
+std::string computeFunction(std::string &value, std::string **table, std::map<std::string, int> &rowName, std::map<std::string, int> &colName, int i, int j);
+int getColCount(std::vector<std::string> &values, char delimiter);
 bool isOperator(char op);
 void printTable(std::string ** table, int rowCount, int colCount, char delimiter);
+void computeTable(std::string ** table, int rowCount, int colCount, std::map<std::string, int> &colNames, std::map<std::string, int> &rowNames);
+void checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter);
+void fillArray(std::vector<std::string> &values, char delimiter, std::string ** table);
+void checkZeroDivision(std::vector<std::string> &values);
+void checkZeroZeroElement(std::vector<std::string> &values, char delimiter);
+void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames);
+void createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames);
+void checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin);
+void writeToValues(std::ifstream &fin, std::vector<std::string> &values);
 
 int main(int argc, char* argv[]){
     
     std::string path = "";
-
-    // No path argument
-    if(argc == 1){                              
-        std::cerr << "Path to file is empty\r\n";       
-        exit(EXIT_FAILURE);                                
-    }
-
-    // Path argument was found ---- "./csvreader file.csv"
-    else if(argc == 2){                              
-        path = argv[1];                        
-    }
-    else{
-        std::cerr << "Too many arguments\r\n";
-        exit(EXIT_FAILURE); 
-    } 
-
+    std::string ** table;
+    std::map<std::string, int> colNames; 
+    std::map<std::string, int> rowNames;
+    std::vector<std::string> values;
     std::ifstream fin;
-    fin.open(path);
-    if(!fin.is_open()){
-        std::cerr << "Wrong path to file\r\n";
-        exit(EXIT_FAILURE); 
-    }
-    else{
-        std::cout << "File was opened\r\n";
-    }
-
     char delimiter = ',';
-    int colCount = 1;
+    int colCount = 0;
     int rowCount = 0;
 
-    std::vector<std::string> values;
-    values.reserve(100000);
-    std::string temp;
+    checkPathArguments(argc, argv, path, fin);
+    writeToValues(fin, values);
+    
+    rowCount = values.size();                                           // Getting row count for checking table format
+    colCount = getColCount(values, delimiter);                         // Getting column count for checking table format
 
+    checkTableFormat(values, colCount,delimiter);                       // Checking table format
+    checkZeroZeroElement(values, delimiter);                            // Checking element [0][0]
+    createRowMap(values, delimiter, rowNames);                          // Checking row numerations
+    createColMap(values, delimiter, colNames);                          // Checking columns names
+    checkZeroDivision(values);                                          // Checking division by zero
+
+    table = new std::string *[rowCount];                                // Creating array of values  
+    for(int i = 0; i < rowCount; i++){
+        table[i] = new std::string[colCount];
+    }
+
+    fillArray(values, delimiter, table);                                // Fill array of values
+    computeTable(table, rowCount, colCount, colNames, rowNames);        // Search for cells for compute. If found operator without '=' symbol, write: "_WRONG_FORMAT_" 
+    printTable(table, rowCount, colCount, delimiter);                   //Final array output
+    fin.close();
+
+    for(int i = 0; i < rowCount;i++)
+        delete [] table[i];
+    delete [] table;
+
+    return 0;
+}
+
+void writeToValues(std::ifstream &fin, std::vector<std::string> &values){
+    std::string temp = "";
     while(!fin.eof()){
         fin >> temp;
         values.push_back(temp);
@@ -55,40 +71,62 @@ int main(int argc, char* argv[]){
         }
     }
     values.shrink_to_fit();
+}
 
-    // Getting column count for checking table format 
-    rowCount = values.size();
-    for(int i = 0; i < values[0].size();i++){
-        if(values[0][i] == delimiter){
-            colCount++; 
-        }
+void checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin){
+    if(argc == 1){                              
+        std::cerr << "Path to file is empty\r\n";                       // No path argument        
+        exit(EXIT_FAILURE);                                
     }
-
-    // Checking table format
-    int tempCol = 1;
-    for(int i = 0; i < values.size(); i++){
-        for(int j = 0; j < values[i].size(); j++){
-            if(values[i][j] == delimiter){
-                tempCol++;
-            }
-        }
-        if(tempCol != colCount){
-            std::cerr << "File preread error\r\n";
-            std::cerr << "Wrong table format\r\n";
-            exit(EXIT_FAILURE);
-        }
-        tempCol = 1;
+    else if(argc == 2){                              
+        path = argv[1];                                                 // Path argument was found "./csvreader file.csv"                       
     }
-
-    // Checking element [0][0] 
-    if(values[0][0] != delimiter){
-        std::cerr << "File preread error\r\n";
-        std::cerr << "Wrong table format\r\n";
+    else{
+        std::cerr << "Too many arguments\r\n";
         exit(EXIT_FAILURE); 
     }
+    fin.open(path);
+    if(!fin.is_open()){
+        std::cerr << "Wrong path to file\r\n";
+        exit(EXIT_FAILURE); 
+    }
+    else{
+        std::cout << "File was opened\r\n";
+    }
+}
 
-    // Checking row numerations
-    std::map<std::string, int> rowNames;
+void createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames){
+    std::string tempColName = "";
+    int colNamesPosition = 1;
+
+    for(int i = 1; i < values[0].size(); i++){
+        while (values[0][i] != delimiter && values[0][i] != '\0'){
+            if(!isalpha(values[0][i])){
+                std::cerr << "File preread error\r\n";
+                std::cerr << "Wrong name symbol in postion: " << i+1 << "\r\n";
+                exit(EXIT_FAILURE);  
+            } 
+            tempColName +=values[0][i];
+            i++;
+        }      
+        if(colNames.count(tempColName) == 1){
+            std::cerr << "File preread error\r\n";
+            std::cerr << "Column Name is already used.\r\n";
+            std::cerr << "Column: " << colNamesPosition << "\r\n";
+            exit(EXIT_FAILURE); 
+        }
+        if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
+                std::cerr << "File preread error\r\n";
+                std::cerr << "Column name is empty: " << i+1 << "\r\n";
+                exit(EXIT_FAILURE);  
+        }
+        colNames.insert(std::pair<std::string, int>(tempColName, colNamesPosition));
+        colNamesPosition++;
+        tempColName = ""; 
+    }
+}
+
+void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames){
     std::string tempRowName = "";
 
     for(int i = 1; i < values.size(); i++){
@@ -118,41 +156,17 @@ int main(int argc, char* argv[]){
             break; 
         }
     }
+}
 
-    // Checking columns names
-    std::map<std::string, int> colNames;
-    std::string tempColName = "";
-    int colNamesPosition = 1;
-
-    for(int i = 1; i < values[0].size(); i++){
-        while (values[0][i] != delimiter && values[0][i] != '\0'){
-            if(!isalpha(values[0][i])){
-                std::cerr << "File preread error\r\n";
-                std::cerr << "Wrong name symbol in postion: " << i+1 << "\r\n";
-                exit(EXIT_FAILURE);  
-            } 
-            tempColName +=values[0][i];
-            i++;
-        }      
-        if(colNames.count(tempColName) == 1){
-            std::cerr << "File preread error\r\n";
-            std::cerr << "Column Name is already used.\r\n";
-            std::cerr << "Column: " << colNamesPosition << "\r\n";
-            exit(EXIT_FAILURE); 
-        }
-        if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
-                std::cerr << "File preread error\r\n";
-                std::cerr << "Column name is empty: " << i+1 << "\r\n";
-                exit(EXIT_FAILURE);  
-        }
-        colNames.insert(std::pair<std::string, int>(tempColName, colNamesPosition));
-        colNamesPosition++;
-        tempColName = ""; 
+void checkZeroZeroElement(std::vector<std::string> &values, char delimiter){
+    if(values[0][0] != delimiter){
+        std::cerr << "File preread error\r\n";
+        std::cerr << "Wrong table format\r\n";
+        exit(EXIT_FAILURE); 
     }
-    
-    // Checking division by zero 
-    // (first check before creating array with values)
-    // (second check will be with table values)
+}
+
+void checkZeroDivision(std::vector<std::string> &values){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
@@ -162,14 +176,9 @@ int main(int argc, char* argv[]){
             }
         }
     }
+}
 
-    // Creating array of values  
-    std::string ** table = new std::string *[rowCount];
-    for(int i = 0; i < rowCount; i++){
-        table[i] = new std::string[colCount];
-    }
-
-    // Fill array of values
+void fillArray(std::vector<std::string> &values, char delimiter, std::string ** table){
     std::string valueToWrite = "";
     int tableRowPosition = 0;
     int tableColPosition = 0;
@@ -191,9 +200,9 @@ int main(int argc, char* argv[]){
         tableColPosition++;
         tableRowPosition = 0;
     }
-    
-    // Search for cells for compute
-    // If found operator without '=' symbol, write: "_WRONG_FORMAT_"
+}
+
+void computeTable(std::string ** table, int rowCount, int colCount, std::map<std::string, int> &colNames, std::map<std::string, int> &rowNames){
     for(int i = 1; i < rowCount; i++){
         for(int j = 0; j < colCount; j++){
             if(table[i][j][0] == '=' ){
@@ -208,17 +217,6 @@ int main(int argc, char* argv[]){
             }
         }
     }
-
-    //Final array output
-    printTable(table, rowCount, colCount, delimiter);
-    
-    fin.close();
-
-    for(int i = 0; i < rowCount;i++)
-        delete [] table[i];
-    delete [] table;
-
-    return 0;
 }
 
 void printTable(std::string ** table, int rowCount, int colCount, char delimiter){
@@ -233,6 +231,33 @@ void printTable(std::string ** table, int rowCount, int colCount, char delimiter
     }
 }
 
+void checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter){
+    int tempCol = 1;
+    for(int i = 0; i < values.size(); i++){
+        for(int j = 0; j < values[i].size(); j++){
+            if(values[i][j] == delimiter){
+                tempCol++;
+            }
+        }
+        if(tempCol != colCount){
+            std::cerr << "File preread error\r\n";
+            std::cerr << "Wrong table format\r\n";
+            exit(EXIT_FAILURE);
+        }
+        tempCol = 1;
+    }
+}
+
+int getColCount(std::vector<std::string> &values, char delimiter){
+    int colCount = 0;
+    for(int i = 0; i < values[0].size();i++){
+        if(values[0][i] == delimiter){
+            colCount++; 
+        }
+    }
+    return colCount + 1;
+}
+
 bool isOperator(char op){
     if( op == '+' || op == '-' || 
         op == '*' || op == '/' ){
@@ -243,7 +268,7 @@ bool isOperator(char op){
     }
 }
 
-std::string computeResult(std::string arg1_result, std::string arg2_result, char op){
+std::string computeResult(std::string &arg1_result, std::string &arg2_result, char op){
     int arg1_result_int = 0;
     bool arg1_isPositive = arg1_result[0] != '-';
     int arg2_result_int = 0;
@@ -284,7 +309,7 @@ std::string computeResult(std::string arg1_result, std::string arg2_result, char
     }
 }
 
-std::string computeFunction(std::string value, std::string **table, std::map<std::string, int> rowName, std::map<std::string, int> colName, int i, int j){
+std::string computeFunction(std::string &value, std::string **table, std::map<std::string, int> &rowName, std::map<std::string, int> &colName, int i, int j){
     std::string arg1_row = "";
     std::string arg1_col = "";
     std::string arg2_row = "";
