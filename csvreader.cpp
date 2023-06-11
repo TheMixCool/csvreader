@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -15,8 +16,8 @@ int main(int argc, char* argv[]){
 
     // No path argument
     if(argc == 1){                              
-        std::cout << "Path to file is empty\r\n";       
-        exit(0);                                
+        std::cerr << "Path to file is empty\r\n";       
+        exit(EXIT_FAILURE);                                
     }
 
     // Path argument was found ---- "./csvreader file.csv"
@@ -24,15 +25,15 @@ int main(int argc, char* argv[]){
         path = argv[1];                        
     }
     else{
-        std::cout << "Too many arguments\r\n";
-        exit(0);
+        std::cerr << "Too many arguments\r\n";
+        exit(EXIT_FAILURE); 
     } 
 
     std::ifstream fin;
     fin.open(path);
     if(!fin.is_open()){
-        std::cout << "Wrong path to file\r\n";
-        exit(0);
+        std::cerr << "Wrong path to file\r\n";
+        exit(EXIT_FAILURE); 
     }
     else{
         std::cout << "File was opened\r\n";
@@ -72,18 +73,18 @@ int main(int argc, char* argv[]){
             }
         }
         if(tempCol != colCount){
-            std::cout << "File preread error\r\n";
-            std::cout << "Wrong table format\r\n";
-            exit(0);
+            std::cerr << "File preread error\r\n";
+            std::cerr << "Wrong table format\r\n";
+            exit(EXIT_FAILURE);
         }
         tempCol = 1;
     }
 
     // Checking element [0][0] 
     if(values[0][0] != delimiter){
-        std::cout << "File preread error\r\n";
-        std::cout<< "Wrong table format\r\n";
-        exit(0);
+        std::cerr << "File preread error\r\n";
+        std::cerr << "Wrong table format\r\n";
+        exit(EXIT_FAILURE); 
     }
 
     // Checking row numerations
@@ -93,24 +94,24 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(!isdigit(values[i][0])){
-                    std::cout << "File preread error\r\n";
-                    std::cout << "Row name is empty: " << i+1 << '\r\n';
-                    exit(0); 
+                    std::cerr << "File preread error\r\n";
+                    std::cerr << "Row name is empty: " << i+1 << "\r\n";
+                    exit(EXIT_FAILURE);  
             }
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
-                    std::cout << "File preread error\r\n";
-                    std::cout << "Wrong name symbol in row: " << i+1 << '\r\n';
-                    exit(0); 
+                    std::cerr << "File preread error\r\n";
+                    std::cerr << "Wrong name symbol in row: " << i+1 << "\r\n";
+                    exit(EXIT_FAILURE);  
                 } 
                 tempRowName +=values[i][j];
                 j++;
             }
             if(rowNames.count(tempRowName) == 1){
-                std::cout << "File preread error\r\n";
-                std::cout << "Row number is already used: " << i+1 << '\r\n';
-                exit(0);
+                std::cerr << "File preread error\r\n";
+                std::cerr<< "Row number is already used: " << i+1 << "\r\n";
+                exit(EXIT_FAILURE); 
             }
             rowNames.insert(std::pair<std::string, int>(tempRowName, i));
             tempRowName = "";
@@ -126,23 +127,23 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values[0].size(); i++){
         while (values[0][i] != delimiter && values[0][i] != '\0'){
             if(!isalpha(values[0][i])){
-                std::cout << "File preread error\r\n";
-                std::cout << "Wrong name symbol in postion: " << i+1 << '\r\n';
-                exit(0); 
+                std::cerr << "File preread error\r\n";
+                std::cerr << "Wrong name symbol in postion: " << i+1 << "\r\n";
+                exit(EXIT_FAILURE);  
             } 
             tempColName +=values[0][i];
             i++;
         }      
         if(colNames.count(tempColName) == 1){
-            std::cout << "File preread error\r\n";
-            std::cout << "Column Name is already used.\r\n";
-            std::cout << "Column: " << colNamesPosition << '\r\n';
-            exit(0);
+            std::cerr << "File preread error\r\n";
+            std::cerr << "Column Name is already used.\r\n";
+            std::cerr << "Column: " << colNamesPosition << "\r\n";
+            exit(EXIT_FAILURE); 
         }
         if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
-                std::cout << "File preread error\r\n";
-                std::cout << "Column name is empty: " << i+1 << '\r\n';
-                exit(0); 
+                std::cerr << "File preread error\r\n";
+                std::cerr << "Column name is empty: " << i+1 << "\r\n";
+                exit(EXIT_FAILURE);  
         }
         colNames.insert(std::pair<std::string, int>(tempColName, colNamesPosition));
         colNamesPosition++;
@@ -155,9 +156,9 @@ int main(int argc, char* argv[]){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
-                std::cout << "File preread error\r\n";
-                std::cout << "Division by zero\r\nRow: " << i+1 << "\tposition: " << j+1 <<'\r\n';
-                exit(0);
+                std::cerr << "File preread error\r\n";
+                std::cerr << "Division by zero\r\nRow: " << i+1 << "\tposition: " << j+1 <<"\r\n";
+                exit(EXIT_FAILURE); 
             }
         }
     }
@@ -228,7 +229,7 @@ void printTable(std::string ** table, int rowCount, int colCount, char delimiter
                 std::cout << delimiter;
              }
         }
-        std::cout << '\r\n';
+        std::cout << "\r\n";
     }
 }
 
@@ -343,4 +344,3 @@ std::string computeFunction(std::string value, std::string **table, std::map<std
 
     return computeResult(arg1_result, arg2_result, op);
 }
-
