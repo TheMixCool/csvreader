@@ -32,11 +32,11 @@ int main(int argc, char* argv[]){
     int colCount = 0;
     int rowCount = 0;
 
-    checkPathArguments(argc, argv, path, fin);
-    writeToValues(fin, values);
+    checkPathArguments(argc, argv, path, fin);                          //Checking the opening of a file and its arguments
+    writeToValues(fin, values);                                         //Writing from file to values 
     
     rowCount = values.size();                                           // Getting row count for checking table format
-    colCount = getColCount(values, delimiter);                         // Getting column count for checking table format
+    colCount = getColCount(values, delimiter);                          // Getting column count for checking table format
 
     checkTableFormat(values, colCount,delimiter);                       // Checking table format
     checkZeroZeroElement(values, delimiter);                            // Checking element [0][0]
