@@ -9,15 +9,16 @@ std::string computeResult(std::string &arg1_result, std::string &arg2_result, ch
 std::string computeFunction(std::string &value, std::string **table, std::map<std::string, int> &rowName, std::map<std::string, int> &colName, int i, int j);
 int getColCount(std::vector<std::string> &values, char delimiter);
 bool isOperator(char op);
+bool checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin);
 void printTable(std::string ** table, int rowCount, int colCount, char delimiter);
 void computeTable(std::string ** table, int rowCount, int colCount, std::map<std::string, int> &colNames, std::map<std::string, int> &rowNames);
-void checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter);
+bool checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter);
 void fillArray(std::vector<std::string> &values, char delimiter, std::string ** table);
-void checkZeroDivision(std::vector<std::string> &values);
-void checkZeroZeroElement(std::vector<std::string> &values, char delimiter);
-void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames);
-void createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames);
-void checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin);
+bool checkZeroDivision(std::vector<std::string> &values);
+bool checkZeroZeroElement(std::vector<std::string> &values, char delimiter);
+bool createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames);
+bool createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames);
+
 void writeToValues(std::ifstream &fin, std::vector<std::string> &values);
 
 int main(int argc, char* argv[]){
@@ -32,17 +33,29 @@ int main(int argc, char* argv[]){
     int colCount = 0;
     int rowCount = 0;
 
-    checkPathArguments(argc, argv, path, fin);                          //Checking the opening of a file and its arguments
+    if(!checkPathArguments(argc, argv, path, fin))                     //Checking the opening of a file and its arguments
+        return 0;   
+                          
     writeToValues(fin, values);                                         //Writing from file to values 
     
     rowCount = values.size();                                           // Getting row count for checking table format
     colCount = getColCount(values, delimiter);                          // Getting column count for checking table format
 
-    checkTableFormat(values, colCount,delimiter);                       // Checking table format
-    checkZeroZeroElement(values, delimiter);                            // Checking element [0][0]
-    createRowMap(values, delimiter, rowNames);                          // Checking row numerations
-    createColMap(values, delimiter, colNames);                          // Checking columns names
-    checkZeroDivision(values);                                          // Checking division by zero
+    if(!checkTableFormat(values, colCount,delimiter))                   // Checking table format
+        return 0;
+    
+    if(!checkZeroZeroElement(values, delimiter))                        // Checking element [0][0]
+        return 0;
+
+    if(!createRowMap(values, delimiter, rowNames))                      // Checking and creating row numerations
+        return 0; 
+
+    if(!createColMap(values, delimiter, colNames))                      // Checking and creating columns names
+        return 0;
+
+    if(!checkZeroDivision(values))                                      // Checking division by zero
+        return 0;                                          
+
 
     table = new std::string *[rowCount];                                // Creating array of values  
     for(int i = 0; i < rowCount; i++){
@@ -58,7 +71,7 @@ int main(int argc, char* argv[]){
         delete [] table[i];
     delete [] table;
 
-    exit(EXIT_SUCCESS);
+    return 0;
 }
 
 void writeToValues(std::ifstream &fin, std::vector<std::string> &values){
@@ -73,29 +86,31 @@ void writeToValues(std::ifstream &fin, std::vector<std::string> &values){
     values.shrink_to_fit();
 }
 
-void checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin){
-    if(argc == 1){                              
-        std::cerr << "Path to file is empty\r\n";                       // No path argument        
-        exit(EXIT_FAILURE);                                
+bool checkPathArguments(int argc, char* argv[], std::string &path, std::ifstream &fin){
+    
+    if(argc != 2){                              
+        if(argc > 2){
+            std::cerr << "Too many arguments\r\n";                          // Too many arguments
+        } 
+        else{                              
+            std::cerr << "Path to file is empty\r\n";                       // No path argument                                        
+        }
+        return false;                                                                    
     }
-    else if(argc == 2){                              
-        path = argv[1];                                                 // Path argument was found "./csvreader file.csv"                       
-    }
-    else{
-        std::cerr << "Too many arguments\r\n";
-        exit(EXIT_FAILURE); 
-    }
+    
+    path = argv[1];                                                         // Path argument was found "./csvreader file.csv" 
     fin.open(path);
     if(!fin.is_open()){
         std::cerr << "Wrong path to file\r\n";
-        exit(EXIT_FAILURE); 
+        return false; 
     }
     else{
         std::cout << "File was opened\r\n";
+        return true;
     }
 }
 
-void createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames){
+bool createColMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &colNames){
     std::string tempColName = "";
     int colNamesPosition = 1;
 
@@ -104,7 +119,7 @@ void createColMap(std::vector<std::string> &values, char delimiter, std::map<std
             if(!isalpha(values[0][i])){
                 std::cerr << "File preread error\r\n";
                 std::cerr << "Wrong name symbol in postion: " << i+1 << "\r\n";
-                exit(EXIT_FAILURE);  
+                return false;  
             } 
             tempColName +=values[0][i];
             i++;
@@ -118,15 +133,16 @@ void createColMap(std::vector<std::string> &values, char delimiter, std::map<std
         if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
                 std::cerr << "File preread error\r\n";
                 std::cerr << "Column name is empty: " << i+1 << "\r\n";
-                exit(EXIT_FAILURE);  
+                return false; 
         }
         colNames.insert(std::pair<std::string, int>(tempColName, colNamesPosition));
         colNamesPosition++;
         tempColName = ""; 
     }
+    return true;
 }
 
-void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames){
+bool createRowMap(std::vector<std::string> &values, char delimiter, std::map<std::string, int> &rowNames){
     std::string tempRowName = "";
 
     for(int i = 1; i < values.size(); i++){
@@ -134,14 +150,14 @@ void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std
             if(!isdigit(values[i][0])){
                     std::cerr << "File preread error\r\n";
                     std::cerr << "Row name is empty: " << i+1 << "\r\n";
-                    exit(EXIT_FAILURE);  
+                    return false;   
             }
             while (values[i][j] != delimiter)
             {
                 if(!isdigit(values[i][j])){
                     std::cerr << "File preread error\r\n";
                     std::cerr << "Wrong name symbol in row: " << i+1 << "\r\n";
-                    exit(EXIT_FAILURE);  
+                    return false; 
                 } 
                 tempRowName +=values[i][j];
                 j++;
@@ -149,33 +165,36 @@ void createRowMap(std::vector<std::string> &values, char delimiter, std::map<std
             if(rowNames.count(tempRowName) == 1){
                 std::cerr << "File preread error\r\n";
                 std::cerr<< "Row number is already used: " << i+1 << "\r\n";
-                exit(EXIT_FAILURE); 
+                return false;  
             }
             rowNames.insert(std::pair<std::string, int>(tempRowName, i));
             tempRowName = "";
             break; 
         }
     }
+    return true;
 }
 
-void checkZeroZeroElement(std::vector<std::string> &values, char delimiter){
+bool checkZeroZeroElement(std::vector<std::string> &values, char delimiter){
     if(values[0][0] != delimiter){
         std::cerr << "File preread error\r\n";
         std::cerr << "Wrong table format\r\n";
-        exit(EXIT_FAILURE); 
+        return false;
     }
+    return true;
 }
 
-void checkZeroDivision(std::vector<std::string> &values){
+bool checkZeroDivision(std::vector<std::string> &values){
     for(int i = 1; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
             if(values[i][j] == '/' && values[i][j+1] == '0'){
                 std::cerr << "File preread error\r\n";
                 std::cerr << "Division by zero\r\nRow: " << i+1 << "\tposition: " << j+1 <<"\r\n";
-                exit(EXIT_FAILURE); 
+                return false; 
             }
         }
     }
+    return true;
 }
 
 void fillArray(std::vector<std::string> &values, char delimiter, std::string ** table){
@@ -231,7 +250,7 @@ void printTable(std::string ** table, int rowCount, int colCount, char delimiter
     }
 }
 
-void checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter){
+bool checkTableFormat(std::vector<std::string> &values, int colCount, char delimiter){
     int tempCol = 1;
     for(int i = 0; i < values.size(); i++){
         for(int j = 0; j < values[i].size(); j++){
@@ -242,10 +261,11 @@ void checkTableFormat(std::vector<std::string> &values, int colCount, char delim
         if(tempCol != colCount){
             std::cerr << "File preread error\r\n";
             std::cerr << "Wrong table format\r\n";
-            exit(EXIT_FAILURE);
+            return false;
         }
         tempCol = 1;
     }
+    return true;
 }
 
 int getColCount(std::vector<std::string> &values, char delimiter){
