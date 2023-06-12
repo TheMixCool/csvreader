@@ -58,7 +58,7 @@ int main(int argc, char* argv[]){
         delete [] table[i];
     delete [] table;
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }
 
 void writeToValues(std::ifstream &fin, std::vector<std::string> &values){
