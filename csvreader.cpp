@@ -128,7 +128,7 @@ bool createColMap(std::vector<std::string> &values, char delimiter, std::map<std
             std::cerr << "File preread error\r\n";
             std::cerr << "Column Name is already used.\r\n";
             std::cerr << "Column: " << colNamesPosition << "\r\n";
-            exit(EXIT_FAILURE); 
+            return false;  
         }
         if(tempColName == "" || values[0][values[0].size()-1] == delimiter){
                 std::cerr << "File preread error\r\n";
