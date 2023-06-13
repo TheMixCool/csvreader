@@ -342,25 +342,42 @@ std::string computeFunction(std::string &value, std::string **table, std::map<st
         if(value[i] == '='){
             i++;
         }
-        while(isalpha(value[i])){
-            arg1_row += value[i];
-            i++;
+        if(isalpha(value[i])){
+            while(isalpha(value[i])){
+                arg1_row += value[i];
+                i++;
+            }
+            while(isdigit(value[i])){
+                arg1_col += value[i];
+                i++;
+            }
         }
-        while(isdigit(value[i])){
-            arg1_col += value[i];
-            i++;
+        else{
+            while(isdigit(value[i])){
+                arg1_result += value[i];
+                i++;
+            }  
         }
+
         op = value[i++];
         if(!isOperator(op)){
             return "_WRONG_OP_";
         }
-        while(isalpha(value[i])){
-            arg2_row += value[i];
-            i++;
-        }
-        while(isdigit(value[i])){
-            arg2_col += value[i];
-            i++;
+
+        if(isalpha(value[i])){
+            while(isalpha(value[i])){
+                arg2_row += value[i];
+                i++;
+            }
+            while(isdigit(value[i])){
+                arg2_col += value[i];
+                i++;
+            }
+        }else{
+            while(isdigit(value[i])){
+                arg2_result += value[i];
+                i++;
+            }  
         }
         if(i == value.length()){
             break;
@@ -371,18 +388,24 @@ std::string computeFunction(std::string &value, std::string **table, std::map<st
     }
 
     //If found non-existent cell
-    if(rowName.count(arg1_col) == 0 || colName.count(arg1_row) == 0 || rowName.count(arg2_col) == 0 || colName.count(arg2_row) == 0){
-        return "_CELLS_NOT_EXISTS_";
+    if(arg1_result == ""){
+        arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
     }
-
+    if(arg2_result == ""){
+        arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
+    }
+    if(arg1_result == ""){
+        if(rowName.count(arg1_col) == 0 || colName.count(arg1_row) == 0 || rowName.count(arg2_col) == 0 || colName.count(arg2_row) == 0){
+            return "_CELLS_NOT_EXISTS_";
+        }
+    }
     //If self linking
-    if((i == rowName.find(arg1_col)->second && j == colName.find(arg1_row)->second) || (i == rowName.find(arg2_col)->second && j == colName.find(arg2_row)->second)){
-        return "_SELF_LINKING_";
+    if(arg2_result == ""){
+        if((i == rowName.find(arg1_col)->second && j == colName.find(arg1_row)->second) || (i == rowName.find(arg2_col)->second && j == colName.find(arg2_row)->second)){
+            return "_SELF_LINKING_";
+        }
     }
-
-    //Get value of arguments by rowName and colName
-    arg1_result = table[rowName.find(arg1_col)->second][colName.find(arg1_row)->second];
-    arg2_result = table[rowName.find(arg2_col)->second][colName.find(arg2_row)->second];
+    
     if(arg2_result == "0" && op == '/'){
         return "_DIVISION_BY_ZERO_";
     }
